@@ -1,8 +1,8 @@
-# HigginsAI
+# Higgins
 
-> Inspired by [ButlerAI](https://github.com/gscalzo/ButlerAI) by Giordano Scalzo — this project started from that repository and evolved into HigginsAI.
+> Inspired by [ButlerAI](https://github.com/gscalzo/ButlerAI) by Giordano Scalzo — this project started from that repository and evolved into Higgins.
 
-HigginsAI is a macOS menubar app that improves selected text with AI. Select text in any app, press a shortcut, pick a prompt, and the improved version is pasted back in place.
+Higgins is a macOS menubar app that improves selected text with AI. Select text in any app, press a shortcut, pick a prompt, and the improved version is pasted back in place.
 
 ## Features
 
@@ -25,7 +25,7 @@ HigginsAI is a macOS menubar app that improves selected text with AI. Select tex
 
 ## Setup
 
-1. Launch HigginsAI (wand icon in the menubar)
+1. Launch Higgins (wand icon in the menubar)
 2. Open **Settings…**
 3. Choose a backend:
    - **OpenAI** — paste your API key (optional custom base URL; default model `gpt-4o-mini`)
@@ -37,7 +37,7 @@ HigginsAI is a macOS menubar app that improves selected text with AI. Select tex
 1. Select text in any application
 2. Press `⌃⌥⌘C`
 3. Pick a prompt from the popup menu
-4. HigginsAI copies the selection, sends it to the AI backend, and pastes the result
+4. Higgins copies the selection, sends it to the AI backend, and pastes the result
 
 ### Prompt format
 

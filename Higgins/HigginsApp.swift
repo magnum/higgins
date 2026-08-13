@@ -15,7 +15,7 @@ final class AppState {
     var openSettings: (() -> Void)?
 
     init() {
-        log("Starting HigginsAI")
+        log("Starting Higgins")
         guard !RuntimeEnvironment.isRunningTests else {
             log("Skipping global hotkey setup during tests")
             return
@@ -124,7 +124,7 @@ final class AppState {
 
         let alert = NSAlert()
         alert.messageText = "Accessibility Access Required"
-        alert.informativeText = "HigginsAI needs Accessibility access to copy and replace selected text. Enable it in System Settings → Privacy & Security → Accessibility, then use ⌃⌥⌘C again."
+        alert.informativeText = "Higgins needs Accessibility access to copy and replace selected text. Enable it in System Settings → Privacy & Security → Accessibility, then use ⌃⌥⌘C again."
         alert.alertStyle = .warning
         alert.addButton(withTitle: "Open System Settings")
         alert.addButton(withTitle: "Later")
@@ -259,7 +259,7 @@ struct HigginsApp: App {
             SettingsView(settings: appState.settings)
         }
 
-        Window("HigginsAI Logs", id: "logs") {
+        Window("Higgins Logs", id: "logs") {
             LogView()
         }
         .defaultSize(width: 800, height: 600)
@@ -274,7 +274,7 @@ struct MenuContentView: View {
     var body: some View {
         VStack(spacing: 0) {
             Label {
-                Text("HigginsAI")
+                Text("Higgins")
                     .font(.headline)
             } icon: {
                 ProcessingIcon(isProcessing: appState.isProcessing)
@@ -305,7 +305,7 @@ struct MenuContentView: View {
 
             Divider()
 
-            Button("Quit HigginsAI") {
+            Button("Quit Higgins") {
                 NSApplication.shared.terminate(nil)
             }
             .keyboardShortcut("q")

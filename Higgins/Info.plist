@@ -5,9 +5,9 @@
     <key>LSUIElement</key>
     <true/>
     <key>NSAppleEventsUsageDescription</key>
-    <string>HigginsAI needs accessibility access to monitor keyboard shortcuts and improve selected text.</string>
+    <string>Higgins needs accessibility access to monitor keyboard shortcuts and improve selected text.</string>
     <key>NSAccessibilityUsageDescription</key>
-    <string>HigginsAI needs accessibility access to monitor keyboard shortcuts and improve selected text.</string>
+    <string>Higgins needs accessibility access to monitor keyboard shortcuts and improve selected text.</string>
     <key>CFBundleDocumentTypes</key>
     <array/>
     <key>NSServices</key>
@@ -34,8 +34,8 @@
         </dict>
     </dict>
     <key>CFBundleDisplayName</key>
-    <string>HigginsAI</string>
+    <string>Higgins</string>
     <key>NSPasteboardUsageDescription</key>
-    <string>HigginsAI needs access to your clipboard to improve selected text.</string>
+    <string>Higgins needs access to your clipboard to improve selected text.</string>
 </dict>
 </plist>

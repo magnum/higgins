@@ -199,9 +199,9 @@ jobs:
 
           # Create DMG
           log "Creating DMG..."
-          if hdiutil create -volname "HigginsAI" -srcfolder $RUNNER_TEMP/export/Higgins.app -ov -format UDZO $RUNNER_TEMP/HigginsAI.dmg; then
+          if hdiutil create -volname "Higgins" -srcfolder $RUNNER_TEMP/export/Higgins.app -ov -format UDZO $RUNNER_TEMP/Higgins.dmg; then
               log "DMG created successfully"
-              log "DMG size: $(du -sh $RUNNER_TEMP/HigginsAI.dmg | cut -f1)"
+              log "DMG size: $(du -sh $RUNNER_TEMP/Higgins.dmg | cut -f1)"
           else
               log "Error: DMG creation failed"
               exit 1
@@ -212,12 +212,12 @@ jobs:
           TEAM_ID_FROM_CERT=$(security find-identity -v -p codesigning | grep "Developer ID" | cut -d '"' -f 2 | cut -d '(' -f 2 | cut -d ')' -f 1)
           log "Using Team ID: $TEAM_ID_FROM_CERT"
           
-          if xcrun notarytool submit $RUNNER_TEMP/HigginsAI.dmg --apple-id "$APPLE_DEVELOPER_ID" --password "$APPLE_DEVELOPER_PASSWORD" --team-id "$TEAM_ID_FROM_CERT" --wait; then
+          if xcrun notarytool submit $RUNNER_TEMP/Higgins.dmg --apple-id "$APPLE_DEVELOPER_ID" --password "$APPLE_DEVELOPER_PASSWORD" --team-id "$TEAM_ID_FROM_CERT" --wait; then
               log "DMG notarization submitted successfully"
               log "Stapling DMG..."
-              if xcrun stapler staple $RUNNER_TEMP/HigginsAI.dmg; then
+              if xcrun stapler staple $RUNNER_TEMP/Higgins.dmg; then
                   log "DMG stapling completed successfully"
-                  log "Final DMG size: $(du -sh $RUNNER_TEMP/HigginsAI.dmg | cut -f1)"
+                  log "Final DMG size: $(du -sh $RUNNER_TEMP/Higgins.dmg | cut -f1)"
               else
                   log "Error: DMG stapling failed"
                   exit 1
@@ -256,6 +256,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ runner.temp }}/HigginsAI.dmg
-          asset_name: HigginsAI.dmg
+          asset_path: ${{ runner.temp }}/Higgins.dmg
+          asset_name: Higgins.dmg
           asset_content_type: application/x-apple-diskimage

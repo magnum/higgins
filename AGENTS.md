@@ -1,9 +1,9 @@
-# HigginsAI Agent Notes
+# Higgins Agent Notes
 
 ## Product Overview
-HigginsAI is a macOS menubar app (no Dock icon) that improves selected text with AI. Hotkey `⌃⌥⌘C` opens a prompt picker, copies the selection, sends it to OpenAI or local Ollama, then pastes the result while restoring the previous clipboard.
+Higgins is a macOS menubar app (no Dock icon) that improves selected text with AI. Hotkey `⌃⌥⌘C` opens a prompt picker, copies the selection, sends it to OpenAI or local Ollama, then pastes the result while restoring the previous clipboard.
 
-Origin: evolved from an earlier ButlerAI-inspired codebase into the current HigginsAI architecture (prompt library, Carbon hotkey, Keychain, clearer AI transport). See README for upstream attribution.
+Origin: evolved from an earlier ButlerAI-inspired codebase into the current Higgins architecture (prompt library, Carbon hotkey, Keychain, clearer AI transport). See README for upstream attribution.
 
 ## High-Level Architecture
 - **UI shell:** SwiftUI `MenuBarExtra` + Settings scene + Logs window
@@ -56,7 +56,7 @@ UserDefaults keys (see `SettingsService.Key`):
 - Legacy migration from `promptsData` / `promptNamesData`
 
 Keychain:
-- Account `openaiKey` (service = bundle id / `HigginsAI`)
+- Account `openaiKey` (service = bundle id / `Higgins`)
 
 Defaults:
 - Backend OpenAI, base URL `https://api.openai.com/v1`
