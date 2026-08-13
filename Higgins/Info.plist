@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>LSUIElement</key>
+    <true/>
+    <key>NSAppleEventsUsageDescription</key>
+    <string>HigginsAI needs accessibility access to monitor keyboard shortcuts and improve selected text.</string>
+    <key>NSAccessibilityUsageDescription</key>
+    <string>HigginsAI needs accessibility access to monitor keyboard shortcuts and improve selected text.</string>
+    <key>CFBundleDocumentTypes</key>
+    <array/>
+    <key>NSServices</key>
+    <array/>
+    <key>LSApplicationCategoryType</key>
+    <string>public.app-category.productivity</string>
+    <key>NSAppTransportSecurity</key>
+    <dict>
+        <key>NSAllowsArbitraryLoads</key>
+        <false/>
+        <key>NSExceptionDomains</key>
+        <dict>
+            <key>api.openai.com</key>
+            <dict>
+                <key>NSIncludesSubdomains</key>
+                <true/>
+                <key>NSTemporaryExceptionAllowsInsecureHTTPLoads</key>
+                <false/>
+                <key>NSTemporaryExceptionMinimumTLSVersion</key>
+                <string>TLSv1.2</string>
+                <key>NSTemporaryExceptionRequiresForwardSecrecy</key>
+                <true/>
+            </dict>
+        </dict>
+    </dict>
+    <key>CFBundleDisplayName</key>
+    <string>HigginsAI</string>
+    <key>NSPasteboardUsageDescription</key>
+    <string>HigginsAI needs access to your clipboard to improve selected text.</string>
+</dict>
+</plist>

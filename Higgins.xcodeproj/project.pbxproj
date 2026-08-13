@@ -1,0 +1,600 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		040C4E76D0DD42A29ADA195A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 63CC1E89779B4C2CB8BDABE2 /* Assets.xcassets */; };
+		0665D2B61E3A451881F3F6C1 /* Models/AIConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A3333FAF6FA4C95A4951839 /* Models/AIConfiguration.swift */; };
+		0B262CC6AC5849DA8C2C5040 /* Services/OllamaClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC97D196DA7C455FB148A2FB /* Services/OllamaClient.swift */; };
+		1D1A2B7FA316474E89325DAA /* OpenAIServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFEEDC4D3E964C9DB9D18D4A /* OpenAIServiceTests.swift */; };
+		1D20F2E64FD54F9684A55E3A /* PasteboardSnapshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00A170BABAFD48EDA419AE3C /* PasteboardSnapshotTests.swift */; };
+		4B4C62AB276C47168379766A /* HigginsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2E034260FF84BDC8704AE58 /* HigginsTests.swift */; };
+		4B8E975043374BAC9A1AD97C /* Services/TextImproving.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68D7BD73EDD44491926347EB /* Services/TextImproving.swift */; };
+		71F14E4D28ED4237B794BBB8 /* HigginsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0838B3203E07418FAD154B8A /* HigginsApp.swift */; };
+		8198D8E8372B4A3BA18C1E0B /* Services/LanguageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5ED5240BD7648A1993E70EE /* Services/LanguageService.swift */; };
+		8D12B7D2128B4365B5511AE9 /* Views/SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4874FE17C6F44CD79BFE500E /* Views/SettingsView.swift */; };
+		973323F919464F0C9119FA2A /* Views/LogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFB9C0231379482E9C9C4C3F /* Views/LogView.swift */; };
+		C3DDCCBBB4D24A67A550B89E /* Services/OpenAIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB67BD41EE6446089DA8B13D /* Services/OpenAIService.swift */; };
+		C88F6763EBCE4FB7B62A8278 /* Services/ClipboardManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7EC5B4E34D2482497F8263C /* Services/ClipboardManager.swift */; };
+		D0050513ACEE4C6A98CCC32D /* Services/KeychainService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E6A6698BA1546C8882CD7E1 /* Services/KeychainService.swift */; };
+		E05FD592CAAE4AC4A87C078B /* Services/LoggerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F62491C8348E45258CC728DC /* Services/LoggerService.swift */; };
+		E2CCE268D1414C97B29B5D21 /* Services/SettingsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B25438F1410A4292A1F90D4C /* Services/SettingsService.swift */; };
+		E5FE039E6F71477E8E2ECD69 /* KeychainServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD7276DAC00849B4AA1BA1AC /* KeychainServiceTests.swift */; };
+		EF0156EA2E1440AA91041626 /* Services/HotkeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E87832E66C764613A32F5D03 /* Services/HotkeyManager.swift */; };
+		F4A08CB34FC74497A7484C5C /* AppIntentsSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74C056324FF845BCB4911848 /* AppIntentsSupport.swift */; };
+		FFDD4EA6CD0946F080CFBAA9 /* Services/RuntimeEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA701ED43CBB4146B747C754 /* Services/RuntimeEnvironment.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		4E706B582D773A28007AEEDA /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4E706B3E2D773A27007AEEDA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4E706B452D773A27007AEEDA;
+			remoteInfo = Higgins;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		00A170BABAFD48EDA419AE3C /* PasteboardSnapshotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteboardSnapshotTests.swift; sourceTree = "<group>"; };
+		0838B3203E07418FAD154B8A /* HigginsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HigginsApp.swift; sourceTree = "<group>"; };
+		1E6A6698BA1546C8882CD7E1 /* Services/KeychainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/KeychainService.swift; sourceTree = "<group>"; };
+		2A3333FAF6FA4C95A4951839 /* Models/AIConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/AIConfiguration.swift; sourceTree = "<group>"; };
+		4874FE17C6F44CD79BFE500E /* Views/SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/SettingsView.swift; sourceTree = "<group>"; };
+		4E706B462D773A27007AEEDA /* Higgins.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Higgins.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		4E706B572D773A28007AEEDA /* HigginsTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HigginsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		63CC1E89779B4C2CB8BDABE2 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		68D7BD73EDD44491926347EB /* Services/TextImproving.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/TextImproving.swift; sourceTree = "<group>"; };
+		74C056324FF845BCB4911848 /* AppIntentsSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIntentsSupport.swift; sourceTree = "<group>"; };
+		A7EC5B4E34D2482497F8263C /* Services/ClipboardManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/ClipboardManager.swift; sourceTree = "<group>"; };
+		B25438F1410A4292A1F90D4C /* Services/SettingsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/SettingsService.swift; sourceTree = "<group>"; };
+		BA701ED43CBB4146B747C754 /* Services/RuntimeEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/RuntimeEnvironment.swift; sourceTree = "<group>"; };
+		CC97D196DA7C455FB148A2FB /* Services/OllamaClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/OllamaClient.swift; sourceTree = "<group>"; };
+		CD7276DAC00849B4AA1BA1AC /* KeychainServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainServiceTests.swift; sourceTree = "<group>"; };
+		CFEEDC4D3E964C9DB9D18D4A /* OpenAIServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenAIServiceTests.swift; sourceTree = "<group>"; };
+		D2E034260FF84BDC8704AE58 /* HigginsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HigginsTests.swift; sourceTree = "<group>"; };
+		DFB9C0231379482E9C9C4C3F /* Views/LogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/LogView.swift; sourceTree = "<group>"; };
+		E5ED5240BD7648A1993E70EE /* Services/LanguageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/LanguageService.swift; sourceTree = "<group>"; };
+		E87832E66C764613A32F5D03 /* Services/HotkeyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/HotkeyManager.swift; sourceTree = "<group>"; };
+		EB67BD41EE6446089DA8B13D /* Services/OpenAIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/OpenAIService.swift; sourceTree = "<group>"; };
+		F62491C8348E45258CC728DC /* Services/LoggerService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/LoggerService.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		4E706B432D773A27007AEEDA /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4E706B542D773A28007AEEDA /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		4E706B3D2D773A27007AEEDA = {
+			isa = PBXGroup;
+			children = (
+				4E706B482D773A27007AEEDA /* Higgins */,
+				4E706B5A2D773A28007AEEDA /* HigginsTests */,
+				4E706B472D773A27007AEEDA /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		4E706B472D773A27007AEEDA /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				4E706B462D773A27007AEEDA /* Higgins.app */,
+				4E706B572D773A28007AEEDA /* HigginsTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		4E706B482D773A27007AEEDA /* Higgins */ = {
+			isa = PBXGroup;
+			children = (
+				74C056324FF845BCB4911848 /* AppIntentsSupport.swift */,
+				63CC1E89779B4C2CB8BDABE2 /* Assets.xcassets */,
+				0838B3203E07418FAD154B8A /* HigginsApp.swift */,
+				2A3333FAF6FA4C95A4951839 /* Models/AIConfiguration.swift */,
+				A7EC5B4E34D2482497F8263C /* Services/ClipboardManager.swift */,
+				E87832E66C764613A32F5D03 /* Services/HotkeyManager.swift */,
+				1E6A6698BA1546C8882CD7E1 /* Services/KeychainService.swift */,
+				E5ED5240BD7648A1993E70EE /* Services/LanguageService.swift */,
+				F62491C8348E45258CC728DC /* Services/LoggerService.swift */,
+				CC97D196DA7C455FB148A2FB /* Services/OllamaClient.swift */,
+				EB67BD41EE6446089DA8B13D /* Services/OpenAIService.swift */,
+				BA701ED43CBB4146B747C754 /* Services/RuntimeEnvironment.swift */,
+				B25438F1410A4292A1F90D4C /* Services/SettingsService.swift */,
+				68D7BD73EDD44491926347EB /* Services/TextImproving.swift */,
+				DFB9C0231379482E9C9C4C3F /* Views/LogView.swift */,
+				4874FE17C6F44CD79BFE500E /* Views/SettingsView.swift */,
+			);
+			path = Higgins;
+			sourceTree = "<group>";
+		};
+		4E706B5A2D773A28007AEEDA /* HigginsTests */ = {
+			isa = PBXGroup;
+			children = (
+				D2E034260FF84BDC8704AE58 /* HigginsTests.swift */,
+				CD7276DAC00849B4AA1BA1AC /* KeychainServiceTests.swift */,
+				CFEEDC4D3E964C9DB9D18D4A /* OpenAIServiceTests.swift */,
+				00A170BABAFD48EDA419AE3C /* PasteboardSnapshotTests.swift */,
+			);
+			path = HigginsTests;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		4E706B452D773A27007AEEDA /* Higgins */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4E706B6B2D773A28007AEEDA /* Build configuration list for PBXNativeTarget "Higgins" */;
+			buildPhases = (
+				4E706B422D773A27007AEEDA /* Sources */,
+				4E706B432D773A27007AEEDA /* Frameworks */,
+				4E706B442D773A27007AEEDA /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Higgins;
+			packageProductDependencies = (
+			);
+			productName = Higgins;
+			productReference = 4E706B462D773A27007AEEDA /* Higgins.app */;
+			productType = "com.apple.product-type.application";
+		};
+		4E706B562D773A28007AEEDA /* HigginsTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4E706B6E2D773A28007AEEDA /* Build configuration list for PBXNativeTarget "HigginsTests" */;
+			buildPhases = (
+				4E706B532D773A28007AEEDA /* Sources */,
+				4E706B542D773A28007AEEDA /* Frameworks */,
+				4E706B552D773A28007AEEDA /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				4E706B592D773A28007AEEDA /* PBXTargetDependency */,
+			);
+			name = HigginsTests;
+			packageProductDependencies = (
+			);
+			productName = HigginsTests;
+			productReference = 4E706B572D773A28007AEEDA /* HigginsTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		4E706B3E2D773A27007AEEDA /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1620;
+				LastUpgradeCheck = 2630;
+				TargetAttributes = {
+					4E706B452D773A27007AEEDA = {
+						CreatedOnToolsVersion = 16.2;
+					};
+					4E706B562D773A28007AEEDA = {
+						CreatedOnToolsVersion = 16.2;
+						TestTargetID = 4E706B452D773A27007AEEDA;
+					};
+				};
+			};
+			buildConfigurationList = 4E706B412D773A27007AEEDA /* Build configuration list for PBXProject "Higgins" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 4E706B3D2D773A27007AEEDA;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 4E706B472D773A27007AEEDA /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				4E706B452D773A27007AEEDA /* Higgins */,
+				4E706B562D773A28007AEEDA /* HigginsTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		4E706B442D773A27007AEEDA /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				040C4E76D0DD42A29ADA195A /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4E706B552D773A28007AEEDA /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		4E706B422D773A27007AEEDA /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F4A08CB34FC74497A7484C5C /* AppIntentsSupport.swift in Sources */,
+				71F14E4D28ED4237B794BBB8 /* HigginsApp.swift in Sources */,
+				0665D2B61E3A451881F3F6C1 /* Models/AIConfiguration.swift in Sources */,
+				8D12B7D2128B4365B5511AE9 /* Views/SettingsView.swift in Sources */,
+				973323F919464F0C9119FA2A /* Views/LogView.swift in Sources */,
+				0B262CC6AC5849DA8C2C5040 /* Services/OllamaClient.swift in Sources */,
+				4B8E975043374BAC9A1AD97C /* Services/TextImproving.swift in Sources */,
+				E05FD592CAAE4AC4A87C078B /* Services/LoggerService.swift in Sources */,
+				FFDD4EA6CD0946F080CFBAA9 /* Services/RuntimeEnvironment.swift in Sources */,
+				8198D8E8372B4A3BA18C1E0B /* Services/LanguageService.swift in Sources */,
+				C3DDCCBBB4D24A67A550B89E /* Services/OpenAIService.swift in Sources */,
+				EF0156EA2E1440AA91041626 /* Services/HotkeyManager.swift in Sources */,
+				D0050513ACEE4C6A98CCC32D /* Services/KeychainService.swift in Sources */,
+				C88F6763EBCE4FB7B62A8278 /* Services/ClipboardManager.swift in Sources */,
+				E2CCE268D1414C97B29B5D21 /* Services/SettingsService.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4E706B532D773A28007AEEDA /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4B4C62AB276C47168379766A /* HigginsTests.swift in Sources */,
+				1D1A2B7FA316474E89325DAA /* OpenAIServiceTests.swift in Sources */,
+				E5FE039E6F71477E8E2ECD69 /* KeychainServiceTests.swift in Sources */,
+				1D20F2E64FD54F9684A55E3A /* PasteboardSnapshotTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		4E706B592D773A28007AEEDA /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4E706B452D773A27007AEEDA /* Higgins */;
+			targetProxy = 4E706B582D773A28007AEEDA /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		4E706B692D773A28007AEEDA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEFINES_MODULE = YES;
+				ENABLE_APPINTENTS_METADATA = NO;
+				ENABLE_APP_INTENTS_METADATA = NO;
+				ENABLE_MODULE_VERIFIER = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.2;
+				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu17 gnu++20";
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				OTHER_LDFLAGS = (
+					"-framework",
+					AppIntents,
+				);
+				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		4E706B6A2D773A28007AEEDA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEFINES_MODULE = YES;
+				ENABLE_APPINTENTS_METADATA = NO;
+				ENABLE_APP_INTENTS_METADATA = NO;
+				ENABLE_MODULE_VERIFIER = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.2;
+				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu17 gnu++20";
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				OTHER_LDFLAGS = (
+					"-framework",
+					AppIntents,
+				);
+				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		4E706B6C2D773A28007AEEDA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				AUTOMATION_APPLE_EVENTS = YES;
+				CODE_SIGN_ENTITLEMENTS = Higgins/Higgins.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_ASSET_PATHS = "\"Higgins/Preview Content\"";
+				DEVELOPMENT_TEAM = H82AJFZ9LV;
+				ENABLE_APPINTENTS_METADATA = NO;
+				ENABLE_APP_INTENTS_METADATA = NO;
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_INCOMING_NETWORK_CONNECTIONS = YES;
+				ENABLE_MODULE_VERIFIER = YES;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSUIElement = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu17 gnu++20";
+				OTHER_LDFLAGS = (
+					"-framework",
+					AppIntents,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.m6i.higgins;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		4E706B6D2D773A28007AEEDA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				AUTOMATION_APPLE_EVENTS = YES;
+				CODE_SIGN_ENTITLEMENTS = Higgins/Higgins.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_ASSET_PATHS = "\"Higgins/Preview Content\"";
+				DEVELOPMENT_TEAM = H82AJFZ9LV;
+				ENABLE_APPINTENTS_METADATA = NO;
+				ENABLE_APP_INTENTS_METADATA = NO;
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_INCOMING_NETWORK_CONNECTIONS = YES;
+				ENABLE_MODULE_VERIFIER = YES;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSUIElement = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu17 gnu++20";
+				OTHER_LDFLAGS = (
+					"-framework",
+					AppIntents,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.m6i.higgins;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		4E706B6F2D773A28007AEEDA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = H82AJFZ9LV;
+				ENABLE_APPINTENTS_METADATA = NO;
+				ENABLE_APP_INTENTS_METADATA = NO;
+				ENABLE_MODULE_VERIFIER = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.2;
+				MARKETING_VERSION = 1.0;
+				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu17 gnu++20";
+				OTHER_LDFLAGS = (
+					"-framework",
+					AppIntents,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.m6i.higgins.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Higgins.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Higgins";
+			};
+			name = Debug;
+		};
+		4E706B702D773A28007AEEDA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = H82AJFZ9LV;
+				ENABLE_APPINTENTS_METADATA = NO;
+				ENABLE_APP_INTENTS_METADATA = NO;
+				ENABLE_MODULE_VERIFIER = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.2;
+				MARKETING_VERSION = 1.0;
+				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu17 gnu++20";
+				OTHER_LDFLAGS = (
+					"-framework",
+					AppIntents,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.m6i.higgins.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Higgins.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Higgins";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		4E706B412D773A27007AEEDA /* Build configuration list for PBXProject "Higgins" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4E706B692D773A28007AEEDA /* Debug */,
+				4E706B6A2D773A28007AEEDA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		4E706B6B2D773A28007AEEDA /* Build configuration list for PBXNativeTarget "Higgins" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4E706B6C2D773A28007AEEDA /* Debug */,
+				4E706B6D2D773A28007AEEDA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		4E706B6E2D773A28007AEEDA /* Build configuration list for PBXNativeTarget "HigginsTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4E706B6F2D773A28007AEEDA /* Debug */,
+				4E706B702D773A28007AEEDA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 4E706B3E2D773A27007AEEDA /* Project object */;
+}

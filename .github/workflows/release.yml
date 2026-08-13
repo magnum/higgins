@@ -1,0 +1,261 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: macos-15
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Select and Verify Xcode 16.2
+        run: |
+          # Define log tag function
+          log() { echo "[HIGGINS] $1"; }
+          
+          log "Selecting Xcode version..."
+          sudo xcode-select -s /Applications/Xcode_16.2.app
+          xcodebuild -version
+          log "Using Xcode at: $(xcode-select -p)"
+          
+          # Verify we're using Xcode 16.2
+          XCODE_VERSION=$(xcodebuild -version | head -n 1 | awk '{ print $2 }')
+          if [ "$XCODE_VERSION" != "16.2" ]; then
+            log "Error: Expected Xcode 16.2 but got $XCODE_VERSION"
+            exit 1
+          fi
+
+      - name: Install the Apple certificate
+        env:
+          BUILD_CERTIFICATE_BASE64: ${{ secrets.CERTIFICATE_BASE64 }}
+          P12_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
+          KEYCHAIN_PASSWORD: ${{ github.run_id }}
+        run: |
+          # Define log tag function
+          log() { echo "[HIGGINS] $1"; }
+
+          log "Setting up keychain..."
+          CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+
+          # Decode the certificate
+          log "Decoding certificate to $CERTIFICATE_PATH..."
+          if echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o $CERTIFICATE_PATH; then
+              log "Certificate decoded successfully"
+              log "Certificate file size: $(stat -f%z "$CERTIFICATE_PATH") bytes"
+          else
+              log "Error: Failed to decode certificate"
+              exit 1
+          fi
+          
+          # Create temporary keychain
+          log "Creating keychain at $KEYCHAIN_PATH..."
+          if security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH; then
+              log "Keychain created successfully"
+              log "Setting keychain timeout to 6 hours..."
+              security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          else
+              log "Error: Failed to create keychain"
+              exit 1
+          fi
+          
+          # Set keychain as default and unlock
+          log "Setting up keychain..."
+          if security default-keychain -s $KEYCHAIN_PATH && \
+             security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH; then
+              log "Keychain set as default and unlocked"
+          else
+              log "Error: Failed to set up keychain"
+              exit 1
+          fi
+          
+          # Import certificate and setup for codesigning
+          log "Setting up certificate..."
+          if security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH && \
+             security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH; then
+              log "Certificate imported and configured for codesigning"
+          else
+              log "Error: Failed to import certificate"
+              exit 1
+          fi
+          
+          # Configure keychain search list
+          log "Configuring keychain search list..."
+          if security list-keychains -d user -s $KEYCHAIN_PATH && \
+             security list-keychains -s $KEYCHAIN_PATH; then
+              log "Keychain search list configured"
+          else
+              log "Error: Failed to configure keychain search list"
+              exit 1
+          fi
+          
+          # Wait for keychain to be ready
+          log "Waiting for keychain to be ready..."
+          sleep 5
+          
+          # Reset keychain list
+          log "Resetting keychain list..."
+          security list-keychains
+          
+          # Verify keychain is default
+          log "Verifying keychain setup..."
+          CURRENT_KEYCHAIN=$(security default-keychain | xargs)
+          if [ "$CURRENT_KEYCHAIN" != "$KEYCHAIN_PATH" ]; then
+              log "Error: Keychain is not set as default. Current: $CURRENT_KEYCHAIN, Expected: $KEYCHAIN_PATH"
+              exit 1
+          fi
+          
+          # Verify keychain is in search list
+          log "Verifying keychain search list..."
+          if ! security list-keychains | grep -q "$KEYCHAIN_PATH"; then
+              log "Error: Keychain not found in search list"
+              exit 1
+          fi
+          
+          # Verify certificate is properly installed
+          log "Verifying certificate installation..."
+          log "Listing available signing identities:"
+          if security find-identity -v -p codesigning $KEYCHAIN_PATH; then
+              if security find-identity -v -p codesigning | grep "Developer ID Application"; then
+                  log "Developer ID Application certificate found and ready"
+              else
+                  log "Error: Developer ID Application certificate not found in keychain"
+                  exit 1
+              fi
+          else
+              log "Error: Failed to list signing identities"
+              exit 1
+          fi
+
+      - name: Build and archive
+        env:
+          APPLE_DEVELOPER_ID: ${{ secrets.APPLE_DEVELOPER_ID }}
+          APPLE_DEVELOPER_PASSWORD: ${{ secrets.APPLE_DEVELOPER_PASSWORD }}
+          TEAM_ID: ${{ secrets.TEAM_ID }}
+          KEYCHAIN_PATH: ${{ runner.temp }}/app-signing.keychain-db
+          KEYCHAIN_PASSWORD: ${{ github.run_id }}
+        run: |
+          # Define log tag function
+          log() { echo "[HIGGINS] $1"; }
+          
+          # Build the app (with detailed logging)
+          log "Starting app build..."
+          log "Archive path: $RUNNER_TEMP/Higgins.xcarchive"
+          if xcodebuild -project Higgins.xcodeproj \
+            -scheme Higgins \
+            -configuration Release \
+            -archivePath $RUNNER_TEMP/Higgins.xcarchive \
+            archive \
+            DEVELOPMENT_TEAM="$TEAM_ID" \
+            CODE_SIGN_IDENTITY="Developer ID Application" \
+            CODE_SIGN_STYLE=Manual \
+            -verbose; then
+              log "App build completed successfully"
+              log "Archive size: $(du -sh $RUNNER_TEMP/Higgins.xcarchive | cut -f1)"
+          else
+              log "Error: App build failed"
+              exit 1
+          fi
+
+          # Ensure keychain is ready for export
+          log "Preparing keychain for export..."
+          security list-keychains -s $KEYCHAIN_PATH
+          security default-keychain -s $KEYCHAIN_PATH
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+
+          # Verify certificate is available
+          log "Verifying certificate before export..."
+          IDENTITIES=$(security find-identity -v -p codesigning)
+          log "Available identities:\n$IDENTITIES"
+          if ! echo "$IDENTITIES" | grep -q "Developer ID Application"; then
+              log "Error: Certificate not found before export"
+              exit 1
+          fi
+
+          # Export archive to app (with detailed logging)
+          log "Exporting archive to app..."
+          log "Export path: $RUNNER_TEMP/export"
+          security find-identity -v -p codesigning
+          if xcodebuild -exportArchive \
+            -archivePath $RUNNER_TEMP/Higgins.xcarchive \
+            -exportPath $RUNNER_TEMP/export \
+            -exportOptionsPlist ExportOptions.plist \
+            DEVELOPMENT_TEAM="$TEAM_ID" \
+            CODE_SIGN_IDENTITY="Developer ID Application" \
+            -verbose; then
+              log "Archive exported successfully"
+              log "App size: $(du -sh $RUNNER_TEMP/export/Higgins.app | cut -f1)"
+          else
+              log "Error: Archive export failed"
+              exit 1
+          fi
+
+          # Create DMG
+          log "Creating DMG..."
+          if hdiutil create -volname "HigginsAI" -srcfolder $RUNNER_TEMP/export/Higgins.app -ov -format UDZO $RUNNER_TEMP/HigginsAI.dmg; then
+              log "DMG created successfully"
+              log "DMG size: $(du -sh $RUNNER_TEMP/HigginsAI.dmg | cut -f1)"
+          else
+              log "Error: DMG creation failed"
+              exit 1
+          fi
+
+          # Sign and notarize DMG
+          log "Submitting DMG for notarization..."
+          TEAM_ID_FROM_CERT=$(security find-identity -v -p codesigning | grep "Developer ID" | cut -d '"' -f 2 | cut -d '(' -f 2 | cut -d ')' -f 1)
+          log "Using Team ID: $TEAM_ID_FROM_CERT"
+          
+          if xcrun notarytool submit $RUNNER_TEMP/HigginsAI.dmg --apple-id "$APPLE_DEVELOPER_ID" --password "$APPLE_DEVELOPER_PASSWORD" --team-id "$TEAM_ID_FROM_CERT" --wait; then
+              log "DMG notarization submitted successfully"
+              log "Stapling DMG..."
+              if xcrun stapler staple $RUNNER_TEMP/HigginsAI.dmg; then
+                  log "DMG stapling completed successfully"
+                  log "Final DMG size: $(du -sh $RUNNER_TEMP/HigginsAI.dmg | cut -f1)"
+              else
+                  log "Error: DMG stapling failed"
+                  exit 1
+              fi
+          else
+              log "Error: DMG notarization failed"
+              exit 1
+          fi
+
+      - name: Log Release Creation
+        run: |
+          # Define log tag function
+          log() { echo "[HIGGINS] $1"; }
+          log "Creating GitHub release..."
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+
+      - name: Log Upload
+        run: |
+          # Define log tag function
+          log() { echo "[HIGGINS] $1"; }
+          log "Uploading DMG to release..."
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ runner.temp }}/HigginsAI.dmg
+          asset_name: HigginsAI.dmg
+          asset_content_type: application/x-apple-diskimage
