@@ -82,7 +82,7 @@ enum AIServiceError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .missingAPIKey:
-            "The OpenAI API key is missing."
+            "The API key is missing."
         case .missingSelectionPlaceholder:
             "The active prompt must contain the {selection} placeholder."
         case .invalidURL(let value):
@@ -100,7 +100,7 @@ enum AIServiceError: LocalizedError {
         case .emptyResponse:
             "The server response did not contain any text."
         case .refusal(let message):
-            "OpenAI declined to transform this text: \(message)"
+            "The AI service declined to transform this text: \(message)"
         case .service(let message):
             message
         }

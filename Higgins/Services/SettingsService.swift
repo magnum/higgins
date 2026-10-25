@@ -19,7 +19,11 @@ final class SettingsService {
     static let defaultPrompt = TextImprovementInstructions.defaultPrompt
 
     var openAIKey: String {
-        didSet { persistOpenAIKey() }
+        didSet { persistAPIKey(openAIKey, account: Key.openAIKey) }
+    }
+
+    var anthropicKey: String {
+        didSet { persistAPIKey(anthropicKey, account: Key.anthropicKey) }
     }
 
     var openAIBaseURL: String {
@@ -27,20 +31,26 @@ final class SettingsService {
     }
 
     var aiBackend: AIBackendType {
-        didSet {
-            defaults.set(aiBackend.rawValue, forKey: Key.aiBackend)
-            if aiBackend == .openAI, oldValue != .openAI {
-                selectedModel = AIModelConstants.defaultOpenAIModel
-            }
-        }
+        didSet { defaults.set(aiBackend.rawValue, forKey: Key.aiBackend) }
     }
 
     var ollamaURL: String {
         didSet { defaults.set(ollamaURL, forKey: Key.ollamaURL) }
     }
 
+    /// Each backend remembers its own model, so switching provider keeps the choice.
+    private(set) var models: [AIBackendType: String] {
+        didSet {
+            for (backend, model) in models {
+                defaults.set(model, forKey: Key.model(for: backend))
+            }
+        }
+    }
+
+    /// The model of the currently selected backend.
     var selectedModel: String {
-        didSet { defaults.set(selectedModel, forKey: Key.selectedModel) }
+        get { models[aiBackend] ?? aiBackend.defaultModel }
+        set { models[aiBackend] = newValue }
     }
 
     private(set) var prompts: [Prompt] {
@@ -68,7 +78,7 @@ final class SettingsService {
 
     @ObservationIgnored private let defaults: UserDefaults
     @ObservationIgnored private let keychain: KeychainService
-    @ObservationIgnored private var isLoadingAPIKey = false
+    @ObservationIgnored private var isLoadingAPIKeys = false
 
     init(
         defaults: UserDefaults = .standard,
@@ -78,12 +88,12 @@ final class SettingsService {
         self.keychain = keychain
         self.openAIBaseURL = defaults.string(forKey: Key.openAIBaseURL)
             ?? AIModelConstants.defaultOpenAIBaseURL
-        self.aiBackend = defaults.string(forKey: Key.aiBackend)
+        let backend = defaults.string(forKey: Key.aiBackend)
             .flatMap(AIBackendType.init(rawValue:)) ?? .openAI
+        self.aiBackend = backend
         self.ollamaURL = defaults.string(forKey: Key.ollamaURL)
             ?? AIModelConstants.defaultOllamaURL
-        self.selectedModel = defaults.string(forKey: Key.selectedModel)
-            ?? AIModelConstants.defaultOpenAIModel
+        self.models = Self.loadModels(from: defaults, legacyBackend: backend)
 
         let loadedPrompts = Self.loadPrompts(from: defaults)
         let effectivePrompts = loadedPrompts.isEmpty
@@ -97,8 +107,9 @@ final class SettingsService {
         self.prompts = effectivePrompts
         self.selectedPromptID = effectivePromptID
         self.openAIKey = ""
+        self.anthropicKey = ""
 
-        loadOpenAIKey()
+        loadAPIKeys()
         persistPrompts()
         log("Settings loaded")
     }
@@ -131,15 +142,22 @@ final class SettingsService {
         }
     }
 
-    private func loadOpenAIKey() {
-        isLoadingAPIKey = true
-        defer { isLoadingAPIKey = false }
+    private func loadAPIKeys() {
+        isLoadingAPIKeys = true
+        defer { isLoadingAPIKeys = false }
+
+        do {
+            anthropicKey = try keychain.get(Key.anthropicKey) ?? ""
+        } catch {
+            log("Failed to load the Anthropic API key: \(error.localizedDescription)", type: .error)
+        }
 
         let legacyKey = defaults.string(forKey: Key.openAIKey) ?? ""
         if !legacyKey.isEmpty {
             openAIKey = legacyKey
             defaults.removeObject(forKey: Key.openAIKey)
-            persistOpenAIKey()
+            isLoadingAPIKeys = false
+            persistAPIKey(openAIKey, account: Key.openAIKey)
             return
         }
 
@@ -150,17 +168,32 @@ final class SettingsService {
         }
     }
 
-    private func persistOpenAIKey() {
-        guard !isLoadingAPIKey else { return }
+    private func persistAPIKey(_ value: String, account: String) {
+        guard !isLoadingAPIKeys else { return }
         do {
-            if openAIKey.isEmpty {
-                try keychain.delete(Key.openAIKey)
+            if value.isEmpty {
+                try keychain.delete(account)
             } else {
-                try keychain.set(openAIKey, for: Key.openAIKey)
+                try keychain.set(value, for: account)
             }
         } catch {
-            log("Failed to save the OpenAI API key: \(error.localizedDescription)", type: .error)
+            log("Failed to save the API key (\(account)): \(error.localizedDescription)", type: .error)
         }
+    }
+
+    private static func loadModels(
+        from defaults: UserDefaults,
+        legacyBackend: AIBackendType
+    ) -> [AIBackendType: String] {
+        // Before per-backend models, a single model was shared by whichever backend was active.
+        let legacyModel = defaults.string(forKey: Key.legacySelectedModel)
+        var models: [AIBackendType: String] = [:]
+        for backend in AIBackendType.allCases {
+            models[backend] = defaults.string(forKey: Key.model(for: backend))
+                ?? (backend == legacyBackend ? legacyModel : nil)
+                ?? backend.defaultModel
+        }
+        return models
     }
 
     private func persistPrompts() {
@@ -193,13 +226,18 @@ final class SettingsService {
 
     private enum Key {
         static let openAIKey = "openaiKey"
+        static let anthropicKey = "anthropicKey"
         static let openAIBaseURL = "openaiBaseURL"
         static let aiBackend = "aiBackend"
         static let ollamaURL = "ollamaURL"
-        static let selectedModel = "selectedModel"
+        static let legacySelectedModel = "selectedModel"
         static let prompts = "prompts.v2"
         static let selectedPromptID = "selectedPromptID"
         static let legacyPrompts = "promptsData"
         static let legacyPromptNames = "promptNamesData"
+
+        static func model(for backend: AIBackendType) -> String {
+            "selectedModel.\(backend.rawValue)"
+        }
     }
 }

@@ -10,6 +10,7 @@
 		040C4E76D0DD42A29ADA195A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 63CC1E89779B4C2CB8BDABE2 /* Assets.xcassets */; };
 		0665D2B61E3A451881F3F6C1 /* Models/AIConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A3333FAF6FA4C95A4951839 /* Models/AIConfiguration.swift */; };
 		0B262CC6AC5849DA8C2C5040 /* Services/OllamaClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC97D196DA7C455FB148A2FB /* Services/OllamaClient.swift */; };
+		A1B2C3D4E5F60718293A4B5C /* Services/AnthropicClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B5D /* Services/AnthropicClient.swift */; };
 		1D1A2B7FA316474E89325DAA /* OpenAIServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFEEDC4D3E964C9DB9D18D4A /* OpenAIServiceTests.swift */; };
 		1D20F2E64FD54F9684A55E3A /* PasteboardSnapshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00A170BABAFD48EDA419AE3C /* PasteboardSnapshotTests.swift */; };
 		4B4C62AB276C47168379766A /* HigginsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2E034260FF84BDC8704AE58 /* HigginsTests.swift */; };
@@ -53,6 +54,7 @@
 		A7EC5B4E34D2482497F8263C /* Services/ClipboardManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/ClipboardManager.swift; sourceTree = "<group>"; };
 		B25438F1410A4292A1F90D4C /* Services/SettingsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/SettingsService.swift; sourceTree = "<group>"; };
 		BA701ED43CBB4146B747C754 /* Services/RuntimeEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/RuntimeEnvironment.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718293A4B5D /* Services/AnthropicClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/AnthropicClient.swift; sourceTree = "<group>"; };
 		CC97D196DA7C455FB148A2FB /* Services/OllamaClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/OllamaClient.swift; sourceTree = "<group>"; };
 		CD7276DAC00849B4AA1BA1AC /* KeychainServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainServiceTests.swift; sourceTree = "<group>"; };
 		CFEEDC4D3E964C9DB9D18D4A /* OpenAIServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenAIServiceTests.swift; sourceTree = "<group>"; };
@@ -113,6 +115,7 @@
 				E5ED5240BD7648A1993E70EE /* Services/LanguageService.swift */,
 				F62491C8348E45258CC728DC /* Services/LoggerService.swift */,
 				CC97D196DA7C455FB148A2FB /* Services/OllamaClient.swift */,
+				A1B2C3D4E5F60718293A4B5D /* Services/AnthropicClient.swift */,
 				EB67BD41EE6446089DA8B13D /* Services/OpenAIService.swift */,
 				BA701ED43CBB4146B747C754 /* Services/RuntimeEnvironment.swift */,
 				B25438F1410A4292A1F90D4C /* Services/SettingsService.swift */,
@@ -244,6 +247,7 @@
 				8D12B7D2128B4365B5511AE9 /* Views/SettingsView.swift in Sources */,
 				973323F919464F0C9119FA2A /* Views/LogView.swift in Sources */,
 				0B262CC6AC5849DA8C2C5040 /* Services/OllamaClient.swift in Sources */,
+				A1B2C3D4E5F60718293A4B5C /* Services/AnthropicClient.swift in Sources */,
 				4B8E975043374BAC9A1AD97C /* Services/TextImproving.swift in Sources */,
 				E05FD592CAAE4AC4A87C078B /* Services/LoggerService.swift in Sources */,
 				FFDD4EA6CD0946F080CFBAA9 /* Services/RuntimeEnvironment.swift in Sources */,

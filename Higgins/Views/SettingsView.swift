@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 
 struct SettingsView: View {
@@ -12,7 +13,7 @@ struct SettingsView: View {
         .formStyle(.grouped)
         .frame(
             width: 440,
-            height: settings.aiBackend == .ollama ? 700 : 640
+            height: settings.aiBackend == .openAI ? 700 : 670
         )
     }
 }
@@ -20,65 +21,117 @@ struct SettingsView: View {
 private struct AISettingsSection: View {
     @Bindable var settings: SettingsService
     @State private var availableModels: [String] = []
+    @State private var modelsBackend: AIBackendType?
     @State private var isLoadingModels = false
     @State private var errorMessage: String?
 
     var body: some View {
         Section("AI Service") {
-            Picker("Backend", selection: $settings.aiBackend) {
-                ForEach(AIBackendType.allCases) { backend in
-                    Text(backend.displayName).tag(backend)
-                }
-            }
-            .pickerStyle(.segmented)
+            FillingPopUpPicker(
+                items: AIBackendType.allCases.map { ($0, $0.displayName) },
+                selection: $settings.aiBackend
+            )
 
-            if settings.aiBackend == .openAI {
+            switch settings.aiBackend {
+            case .openAI:
                 SecureField("API Key", text: $settings.openAIKey)
                 TextField("Base URL", text: $settings.openAIBaseURL)
-            } else {
+            case .anthropic:
+                SecureField("API Key", text: $settings.anthropicKey)
+            case .ollama:
                 TextField("Server URL", text: $settings.ollamaURL)
+            }
+
+            HStack {
+                FillingPopUpPicker(
+                    items: modelOptions.map { ($0, $0) },
+                    selection: $settings.selectedModel
+                )
+                .disabled(isLoadingModels || modelOptions.isEmpty)
+                .help("Model")
 
                 if isLoadingModels {
-                    ProgressView("Loading models…")
+                    ProgressView()
+                        .controlSize(.small)
+                        .frame(width: 14, height: 14)
                 } else {
-                    Picker("Model", selection: $settings.selectedModel) {
-                        ForEach(availableModels, id: \.self) { model in
-                            Text(model).tag(model)
-                        }
-                    }
-                    .disabled(availableModels.isEmpty)
-
-                    Button("Refresh Models", systemImage: "arrow.clockwise") {
+                    Button {
                         Task { await fetchModels() }
+                    } label: {
+                        Image(systemName: "arrow.clockwise")
+                            .frame(width: 14, height: 14)
                     }
-                }
-
-                if let errorMessage {
-                    Text(errorMessage)
-                        .font(.caption)
-                        .foregroundStyle(.red)
+                    .buttonStyle(.bordered)
+                    .help("Refresh models")
                 }
             }
+
+            if let errorMessage {
+                Text(errorMessage)
+                    .font(.caption)
+                    .foregroundStyle(.red)
+            }
         }
-        .task(id: "\(settings.aiBackend.rawValue):\(settings.ollamaURL)") {
-            guard settings.aiBackend == .ollama else { return }
+        .task(id: modelSourceID) {
+            // Debounce while the user is still typing a key or URL.
+            try? await Task.sleep(for: .milliseconds(500))
+            guard !Task.isCancelled else { return }
             await fetchModels()
         }
     }
 
+    /// Fetched models plus the current selection, so the picker never loses it.
+    private var modelOptions: [String] {
+        // A list fetched for another backend is stale until the new fetch completes.
+        let fetched = modelsBackend == settings.aiBackend ? availableModels : []
+        let current = settings.selectedModel
+        guard !current.isEmpty, !fetched.contains(current) else {
+            return fetched
+        }
+        return [current] + fetched
+    }
+
+    /// Changes whenever the inputs that determine the model list change.
+    private var modelSourceID: String {
+        switch settings.aiBackend {
+        case .openAI:
+            "openai:\(settings.openAIBaseURL):\(settings.openAIKey)"
+        case .anthropic:
+            "anthropic:\(settings.anthropicKey)"
+        case .ollama:
+            "ollama:\(settings.ollamaURL)"
+        }
+    }
+
     private func fetchModels() async {
+        let backend = settings.aiBackend
         isLoadingModels = true
         errorMessage = nil
         defer { isLoadingModels = false }
 
         do {
-            availableModels = try await OllamaClient.fetchModels(serverURL: settings.ollamaURL)
-            if let firstModel = availableModels.first,
-               !availableModels.contains(settings.selectedModel) {
+            let models = switch backend {
+            case .openAI:
+                try await OpenAIClient.fetchModels(
+                    apiKey: settings.openAIKey,
+                    serverURL: settings.openAIBaseURL
+                )
+            case .anthropic:
+                try await AnthropicClient.fetchModels(apiKey: settings.anthropicKey)
+            case .ollama:
+                try await OllamaClient.fetchModels(serverURL: settings.ollamaURL)
+            }
+            // Ignore results that arrive after the user switched backend.
+            guard backend == settings.aiBackend else { return }
+            availableModels = models
+            modelsBackend = backend
+            if let firstModel = models.first, !models.contains(settings.selectedModel) {
                 settings.selectedModel = firstModel
             }
         } catch {
+            guard backend == settings.aiBackend, !Task.isCancelled else { return }
             availableModels = []
+            modelsBackend = backend
             errorMessage = error.localizedDescription
         }
     }
@@ -92,11 +145,10 @@ private struct PromptSettingsSection: View {
     var body: some View {
         Section("Prompt") {
             HStack {
-                Picker("Active Prompt", selection: promptSelection) {
-                    ForEach(settings.prompts) { prompt in
-                        Text(prompt.name).tag(prompt.id)
-                    }
-                }
+                FillingPopUpPicker(
+                    items: settings.prompts.map { ($0.id, $0.name) },
+                    selection: promptSelection
+                )
 
                 Button {
                     editor = .rename
@@ -249,6 +301,63 @@ private struct PromptNameEditor: View {
             "A prompt with this name already exists."
         } else {
             nil
+        }
+    }
+}
+
+/// A pop-up menu that fills the available width.
+/// SwiftUI's menu `Picker` keeps the pop-up button at its intrinsic width on macOS,
+/// so `.frame(maxWidth: .infinity)` only centers it instead of stretching it.
+private struct FillingPopUpPicker<ID: Hashable>: NSViewRepresentable {
+    let items: [(id: ID, title: String)]
+    @Binding var selection: ID
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator()
+    }
+
+    func makeNSView(context: Context) -> NSPopUpButton {
+        let button = NSPopUpButton(frame: .zero, pullsDown: false)
+        button.target = context.coordinator
+        button.action = #selector(Coordinator.selectionChanged(_:))
+        button.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        button.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        return button
+    }
+
+    func updateNSView(_ button: NSPopUpButton, context: Context) {
+        context.coordinator.onSelect = { index in
+            guard items.indices.contains(index) else { return }
+            selection = items[index].id
+        }
+
+        let titles = items.map(\.title)
+        if button.itemTitles != titles {
+            // NSPopUpButton merges duplicate titles, so add items through the menu.
+            button.removeAllItems()
+            for title in titles {
+                button.menu?.addItem(withTitle: title, action: nil, keyEquivalent: "")
+            }
+        }
+
+        if let index = items.firstIndex(where: { $0.id == selection }) {
+            button.selectItem(at: index)
+        } else {
+            button.select(nil)
+        }
+        button.isEnabled = context.environment.isEnabled
+    }
+
+    func sizeThatFits(_ proposal: ProposedViewSize, nsView: NSPopUpButton, context: Context) -> CGSize? {
+        let intrinsicSize = nsView.intrinsicContentSize
+        return CGSize(width: proposal.width ?? intrinsicSize.width, height: intrinsicSize.height)
+    }
+
+    final class Coordinator: NSObject {
+        var onSelect: (Int) -> Void = { _ in }
+
+        @objc func selectionChanged(_ sender: NSPopUpButton) {
+            onSelect(sender.indexOfSelectedItem)
         }
     }
 }

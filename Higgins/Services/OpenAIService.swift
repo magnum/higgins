@@ -30,6 +30,45 @@ final class OpenAIClient: TextImproving {
         return baseURL.appendingPathComponent("v1/chat/completions")
     }
 
+    static func modelsEndpoint(baseURL: URL) -> URL {
+        if baseURL.pathComponents.last == "v1" {
+            return baseURL.appendingPathComponent("models")
+        }
+        return baseURL.appendingPathComponent("v1/models")
+    }
+
+    /// Lists the chat-capable models available to the API key, newest IDs first.
+    static func fetchModels(
+        apiKey: String,
+        serverURL: String = AIModelConstants.defaultOpenAIBaseURL,
+        session: URLSession = .shared
+    ) async throws -> [String] {
+        guard !apiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            throw AIServiceError.missingAPIKey
+        }
+        guard let baseURL = URL(string: serverURL) else {
+            throw AIServiceError.invalidURL(serverURL)
+        }
+
+        var request = URLRequest(url: modelsEndpoint(baseURL: baseURL))
+        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        let response = try await AITransport.send(request, as: ModelsResponse.self, session: session)
+        return response.data
+            .map(\.id)
+            .filter(isChatModel)
+            .sorted { $0 > $1 }
+    }
+
+    /// The models endpoint also returns embedding, audio and image models,
+    /// which can't serve chat completions.
+    private static func isChatModel(_ id: String) -> Bool {
+        let excludedFragments = [
+            "embedding", "tts", "whisper", "dall-e", "moderation",
+            "audio", "realtime", "transcribe", "image", "search", "davinci", "babbage"
+        ]
+        return !excludedFragments.contains { id.contains($0) }
+    }
+
     func improveText(_ text: String) async throws -> String {
         try await responseText(for: makeRequest(for: text))
     }
@@ -124,4 +163,12 @@ private struct ChatResponse: Decodable {
     }
 
     let choices: [Choice]
+}
+
+private struct ModelsResponse: Decodable {
+    struct Model: Decodable {
+        let id: String
+    }
+
+    let data: [Model]
 }

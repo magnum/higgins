@@ -103,6 +103,12 @@ final class AppState {
                 model: settings.selectedModel,
                 serverURL: settings.openAIBaseURL
             )
+        case .anthropic:
+            AnthropicClient(
+                apiKey: settings.anthropicKey,
+                prompt: settings.improvementPrompt,
+                model: settings.selectedModel
+            )
         case .ollama:
             OllamaClient(
                 prompt: settings.improvementPrompt,
