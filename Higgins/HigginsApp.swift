@@ -299,7 +299,7 @@ struct MenuContentView: View {
             .keyboardShortcut("l")
 
             Button("Settings…") {
-                openSettings()
+                showSettings()
             }
             .keyboardShortcut(",")
 
@@ -312,8 +312,35 @@ struct MenuContentView: View {
         }
         .fixedSize()
         .onAppear {
-            appState.openSettings = { openSettings() }
+            appState.openSettings = { showSettings() }
         }
+    }
+
+    /// Opens the Settings window and brings it to the front.
+    /// As a menu bar app, Higgins isn't active by default, so the window
+    /// would otherwise open behind the frontmost application.
+    private func showSettings() {
+        openSettings()
+        // The action runs while the menu bar menu is still tracking, so any
+        // activation done now is lost when the menu closes. Wait for the menu
+        // to dismiss and for SwiftUI to create the window, then bring it front.
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(150))
+            NSApp.activate()
+            guard let window = NSApp.windows.first(where: \.isSettingsWindow) else {
+                log("Settings window not found", type: .error)
+                return
+            }
+            window.makeKeyAndOrderFront(nil)
+            window.orderFrontRegardless()
+        }
+    }
+}
+
+private extension NSWindow {
+    /// SwiftUI tags the `Settings` scene window with an identifier containing "Settings".
+    var isSettingsWindow: Bool {
+        identifier?.rawValue.localizedCaseInsensitiveContains("settings") == true
     }
 }
 
