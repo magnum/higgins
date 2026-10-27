@@ -19,24 +19,41 @@ final class SettingsService {
     static let defaultPrompt = TextImprovementInstructions.defaultPrompt
 
     var openAIKey: String {
-        didSet { persistAPIKey(openAIKey, account: Key.openAIKey) }
+        didSet {
+            persistAPIKey(openAIKey, account: Key.openAIKey)
+            clearVerificationIfIncomplete()
+        }
     }
 
     var anthropicKey: String {
-        didSet { persistAPIKey(anthropicKey, account: Key.anthropicKey) }
-    }
-
-    var openAIBaseURL: String {
-        didSet { defaults.set(openAIBaseURL, forKey: Key.openAIBaseURL) }
+        didSet {
+            persistAPIKey(anthropicKey, account: Key.anthropicKey)
+            clearVerificationIfIncomplete()
+        }
     }
 
     var aiBackend: AIBackendType {
-        didSet { defaults.set(aiBackend.rawValue, forKey: Key.aiBackend) }
+        didSet {
+            defaults.set(aiBackend.rawValue, forKey: Key.aiBackend)
+            clearVerificationIfIncomplete()
+        }
     }
 
-    var ollamaURL: String {
-        didSet { defaults.set(ollamaURL, forKey: Key.ollamaURL) }
+    var hotkeyShortcut: HotkeyShortcut {
+        didSet {
+            persistHotkeyShortcut()
+            onHotkeyConfigurationChange?()
+        }
     }
+
+    /// True while the Settings UI captures a new shortcut; the global hotkey
+    /// is released meanwhile so pressing the current combination reaches the recorder.
+    var isRecordingHotkey = false {
+        didSet { onHotkeyConfigurationChange?() }
+    }
+
+    /// Called when the shortcut or the recording state changes.
+    @ObservationIgnored var onHotkeyConfigurationChange: (() -> Void)?
 
     /// Each backend remembers its own model, so switching provider keeps the choice.
     private(set) var models: [AIBackendType: String] {
@@ -44,6 +61,7 @@ final class SettingsService {
             for (backend, model) in models {
                 defaults.set(model, forKey: Key.model(for: backend))
             }
+            clearVerificationIfIncomplete()
         }
     }
 
@@ -51,6 +69,39 @@ final class SettingsService {
     var selectedModel: String {
         get { models[aiBackend] ?? aiBackend.defaultModel }
         set { models[aiBackend] = newValue }
+    }
+
+    /// True after the user saved AI settings that a test call has verified.
+    private(set) var hasVerifiedAISettings: Bool {
+        didSet { defaults.set(hasVerifiedAISettings, forKey: Key.aiSettingsVerified) }
+    }
+
+    /// Provider, model, and API key (when the backend needs one) are present.
+    var hasRequiredAISettings: Bool {
+        let model = selectedModel.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !model.isEmpty else { return false }
+        switch aiBackend {
+        case .openAI, .anthropic:
+            return !currentAPIKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        case .ollama:
+            return true
+        }
+    }
+
+    /// First-run / incomplete setup: Settings must be shown until Save succeeds.
+    var needsAISetup: Bool {
+        !hasVerifiedAISettings || !hasRequiredAISettings
+    }
+
+    var currentAPIKey: String {
+        switch aiBackend {
+        case .openAI:
+            openAIKey
+        case .anthropic:
+            anthropicKey
+        case .ollama:
+            ""
+        }
     }
 
     private(set) var prompts: [Prompt] {
@@ -86,13 +137,12 @@ final class SettingsService {
     ) {
         self.defaults = defaults
         self.keychain = keychain
-        self.openAIBaseURL = defaults.string(forKey: Key.openAIBaseURL)
-            ?? AIModelConstants.defaultOpenAIBaseURL
         let backend = defaults.string(forKey: Key.aiBackend)
             .flatMap(AIBackendType.init(rawValue:)) ?? .openAI
         self.aiBackend = backend
-        self.ollamaURL = defaults.string(forKey: Key.ollamaURL)
-            ?? AIModelConstants.defaultOllamaURL
+        self.hotkeyShortcut = defaults.data(forKey: Key.hotkeyShortcut)
+            .flatMap { try? JSONDecoder().decode(HotkeyShortcut.self, from: $0) }
+            ?? .default
         self.models = Self.loadModels(from: defaults, legacyBackend: backend)
 
         let loadedPrompts = Self.loadPrompts(from: defaults)
@@ -108,10 +158,21 @@ final class SettingsService {
         self.selectedPromptID = effectivePromptID
         self.openAIKey = ""
         self.anthropicKey = ""
+        self.hasVerifiedAISettings = false
 
         loadAPIKeys()
+        resolveVerifiedAISettings()
         persistPrompts()
         log("Settings loaded")
+    }
+
+    /// Marks the current provider, model, and key as saved after a successful test call.
+    @discardableResult
+    func saveAISettings(verifiedByTest: Bool) -> Bool {
+        guard hasRequiredAISettings, verifiedByTest else { return false }
+        hasVerifiedAISettings = true
+        log("AI settings saved")
+        return true
     }
 
     func selectPrompt(id: Prompt.ID) {
@@ -168,6 +229,21 @@ final class SettingsService {
         }
     }
 
+    private func clearVerificationIfIncomplete() {
+        guard !isLoadingAPIKeys, hasVerifiedAISettings, !hasRequiredAISettings else { return }
+        hasVerifiedAISettings = false
+    }
+
+    /// Existing installs already have working credentials; don't force setup again.
+    private func resolveVerifiedAISettings() {
+        if defaults.object(forKey: Key.aiSettingsVerified) == nil {
+            hasVerifiedAISettings = hasRequiredAISettings
+            defaults.set(hasVerifiedAISettings, forKey: Key.aiSettingsVerified)
+        } else {
+            hasVerifiedAISettings = defaults.bool(forKey: Key.aiSettingsVerified)
+        }
+    }
+
     private func persistAPIKey(_ value: String, account: String) {
         guard !isLoadingAPIKeys else { return }
         do {
@@ -194,6 +270,14 @@ final class SettingsService {
                 ?? backend.defaultModel
         }
         return models
+    }
+
+    private func persistHotkeyShortcut() {
+        do {
+            defaults.set(try JSONEncoder().encode(hotkeyShortcut), forKey: Key.hotkeyShortcut)
+        } catch {
+            log("Failed to save the keyboard shortcut: \(error.localizedDescription)", type: .error)
+        }
     }
 
     private func persistPrompts() {
@@ -227,12 +311,12 @@ final class SettingsService {
     private enum Key {
         static let openAIKey = "openaiKey"
         static let anthropicKey = "anthropicKey"
-        static let openAIBaseURL = "openaiBaseURL"
         static let aiBackend = "aiBackend"
-        static let ollamaURL = "ollamaURL"
+        static let hotkeyShortcut = "hotkeyShortcut"
         static let legacySelectedModel = "selectedModel"
         static let prompts = "prompts.v2"
         static let selectedPromptID = "selectedPromptID"
+        static let aiSettingsVerified = "aiSettingsVerified"
         static let legacyPrompts = "promptsData"
         static let legacyPromptNames = "promptNamesData"
 

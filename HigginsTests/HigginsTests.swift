@@ -53,6 +53,110 @@ final class SettingsServiceTests: XCTestCase {
         XCTAssertFalse(settings.containsPrompt(named: "review", excluding: settings.selectedPromptID))
     }
 
+    func testFreshSettingsNeedAISetupUntilVerifiedAndSaved() {
+        let (settings, defaults, suite) = makeSettings()
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        XCTAssertEqual(settings.aiBackend, .openAI)
+        XCTAssertEqual(settings.selectedModel, AIModelConstants.defaultOpenAIModel)
+        XCTAssertTrue(settings.needsAISetup)
+        XCTAssertFalse(settings.hasRequiredAISettings)
+        XCTAssertFalse(settings.saveAISettings(verifiedByTest: true))
+        XCTAssertTrue(settings.needsAISetup)
+    }
+
+    func testAISettingsPersistWhenChangedAndRequireVerificationToSave() {
+        let (settings, defaults, suite) = makeSettings()
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        settings.aiBackend = .anthropic
+        settings.selectedModel = "claude-opus-5-5"
+        settings.anthropicKey = "ant-key"
+
+        XCTAssertTrue(settings.hasRequiredAISettings)
+        XCTAssertTrue(settings.needsAISetup)
+        XCTAssertFalse(settings.saveAISettings(verifiedByTest: false))
+        XCTAssertTrue(settings.saveAISettings(verifiedByTest: true))
+        XCTAssertFalse(settings.needsAISetup)
+
+        let reloaded = SettingsService(
+            defaults: defaults,
+            keychain: KeychainService(service: suite)
+        )
+
+        XCTAssertEqual(reloaded.aiBackend, .anthropic)
+        XCTAssertEqual(reloaded.selectedModel, "claude-opus-5-5")
+        XCTAssertEqual(reloaded.anthropicKey, "ant-key")
+        XCTAssertFalse(reloaded.needsAISetup)
+    }
+
+    func testOllamaSetupRequiresAModelButNotAnAPIKey() {
+        let (settings, defaults, suite) = makeSettings()
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        settings.aiBackend = .ollama
+
+        XCTAssertFalse(settings.hasRequiredAISettings)
+        XCTAssertTrue(settings.needsAISetup)
+
+        settings.selectedModel = "llama3"
+
+        XCTAssertTrue(settings.hasRequiredAISettings)
+        XCTAssertTrue(settings.saveAISettings(verifiedByTest: true))
+        XCTAssertFalse(settings.needsAISetup)
+    }
+
+    func testClearingTheAPIKeyRequiresSetupAgain() {
+        let (settings, defaults, suite) = makeSettings()
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        settings.openAIKey = "sk-test"
+        XCTAssertTrue(settings.saveAISettings(verifiedByTest: true))
+        XCTAssertFalse(settings.needsAISetup)
+
+        settings.openAIKey = ""
+
+        XCTAssertTrue(settings.needsAISetup)
+        XCTAssertFalse(settings.hasVerifiedAISettings)
+        XCTAssertFalse(settings.saveAISettings(verifiedByTest: true))
+
+        settings.openAIKey = "sk-test"
+        XCTAssertTrue(settings.needsAISetup)
+        XCTAssertTrue(settings.saveAISettings(verifiedByTest: true))
+        XCTAssertFalse(settings.needsAISetup)
+    }
+
+    func testSwitchingToABackendWithoutCredentialsRequiresSetupAgain() {
+        let (settings, defaults, suite) = makeSettings()
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        settings.openAIKey = "sk-test"
+        XCTAssertTrue(settings.saveAISettings(verifiedByTest: true))
+
+        settings.aiBackend = .anthropic
+
+        XCTAssertTrue(settings.needsAISetup)
+        XCTAssertFalse(settings.hasVerifiedAISettings)
+    }
+
+    func testExistingCredentialsAreTreatedAsAlreadyVerified() throws {
+        let suite = "HigginsTests.Settings.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        defaults.removePersistentDomain(forName: suite)
+        let keychain = KeychainService(service: suite)
+        try keychain.set("sk-existing", for: "openaiKey")
+        defaults.set("openai", forKey: "aiBackend")
+        defaults.set("gpt-4o-mini", forKey: "selectedModel.openai")
+
+        let settings = SettingsService(defaults: defaults, keychain: keychain)
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        XCTAssertEqual(settings.openAIKey, "sk-existing")
+        XCTAssertTrue(settings.hasRequiredAISettings)
+        XCTAssertTrue(settings.hasVerifiedAISettings)
+        XCTAssertFalse(settings.needsAISetup)
+    }
+
     private func makeSettings() -> (SettingsService, UserDefaults, String) {
         let suite = "HigginsTests.Settings.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suite)!
@@ -80,10 +184,10 @@ final class PromptMenuControllerTests: XCTestCase {
             selectedPromptID: selectedPrompt.id
         )
 
-        XCTAssertEqual(presentation.menu.items.map(\.title), ["Improve", "Formal"])
-        XCTAssertEqual(presentation.menu.items[0].state, .off)
-        XCTAssertEqual(presentation.menu.items[1].state, .on)
-        XCTAssertIdentical(presentation.selectedItem, presentation.menu.items[1])
+        XCTAssertEqual(presentation.menu.items.map(\.title), ["Prompt:", "", "Improve", "Formal"])
+        XCTAssertEqual(presentation.menu.items[2].state, .off)
+        XCTAssertEqual(presentation.menu.items[3].state, .on)
+        XCTAssertIdentical(presentation.selectedItem, presentation.menu.items[3])
     }
 
     func testActivatingMenuItemReturnsItsPromptID() {
@@ -95,7 +199,7 @@ final class PromptMenuControllerTests: XCTestCase {
             selectedPromptID: firstPrompt.id
         )
 
-        presentation.menu.performActionForItem(at: 1)
+        presentation.menu.performActionForItem(at: 3)
 
         XCTAssertEqual(controller.selectedPromptID, secondPrompt.id)
     }

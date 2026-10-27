@@ -121,20 +121,36 @@ enum AITransport {
         as responseType: Response.Type,
         session: URLSession = .shared
     ) async throws -> Response {
+        let method = request.httpMethod ?? "GET"
+        let endpoint = request.url?.absoluteString ?? "unknown URL"
+        // Only the body is logged: headers carry the API key.
+        log("→ \(method) \(endpoint)", detail: request.httpBody.map(prettyPrinted))
+
+        let start = Date()
         let data: Data
         let response: URLResponse
 
         do {
             (data, response) = try await session.data(for: request)
         } catch {
+            log("✕ \(method) \(endpoint) failed: \(error.localizedDescription)", type: .error)
             throw AIServiceError.network(error)
         }
 
         guard let httpResponse = response as? HTTPURLResponse else {
+            log("✕ \(method) \(endpoint) returned a non-HTTP response", type: .error)
             throw AIServiceError.invalidResponse(statusCode: 0, body: nil)
         }
 
-        guard (200..<300).contains(httpResponse.statusCode) else {
+        let elapsed = Int(Date().timeIntervalSince(start) * 1000)
+        let isSuccess = (200..<300).contains(httpResponse.statusCode)
+        log(
+            "← HTTP \(httpResponse.statusCode) \(method) \(endpoint) (\(elapsed) ms)",
+            type: isSuccess ? .info : .error,
+            detail: prettyPrinted(data)
+        )
+
+        guard isSuccess else {
             if let serviceError = try? JSONDecoder().decode(ErrorEnvelope.self, from: data) {
                 throw AIServiceError.service(serviceError.error.message)
             }
@@ -149,5 +165,18 @@ enum AITransport {
         } catch {
             throw AIServiceError.decoding(error)
         }
+    }
+
+    /// Formats JSON for the log detail view, falling back to the raw text.
+    private static func prettyPrinted(_ data: Data) -> String {
+        if let object = try? JSONSerialization.jsonObject(with: data),
+           let formatted = try? JSONSerialization.data(
+               withJSONObject: object,
+               options: [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
+           ),
+           let text = String(data: formatted, encoding: .utf8) {
+            return text
+        }
+        return String(data: data, encoding: .utf8) ?? "<\(data.count) bytes>"
     }
 }

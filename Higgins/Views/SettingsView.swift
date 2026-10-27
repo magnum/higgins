@@ -3,54 +3,97 @@ import SwiftUI
 
 struct SettingsView: View {
     @Bindable var settings: SettingsService
+    @State private var isVerifiedWithTest = false
+    @State private var isVerificationInProgress = false
 
     var body: some View {
-        Form {
-            AISettingsSection(settings: settings)
-            PromptSettingsSection(settings: settings)
-            ShortcutSettingsSection()
+        VStack(spacing: 0) {
+            VStack(spacing: 4) {
+                Text("Settings")
+                    .font(.title2.weight(.semibold))
+                if settings.needsAISetup {
+                    Text("Please set AI settings")
+                        .font(.callout)
+                        .foregroundStyle(.red)
+                }
+            }
+            .padding(.top, 10)
+            .padding(.bottom, 2)
+
+            VStack(spacing: 8) {
+                AISettingsSection(
+                    settings: settings,
+                    isVerifiedWithTest: $isVerifiedWithTest,
+                    isVerificationInProgress: $isVerificationInProgress
+                )
+                PromptSettingsSection(settings: settings)
+                ShortcutSettingsSection(settings: settings)
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 8)
+
+            Button {
+                settings.saveAISettings(verifiedByTest: isVerifiedWithTest)
+            } label: {
+                Text("Save")
+                    .font(.headline)
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
+            .keyboardShortcut(.defaultAction)
+            .disabled(!canSave)
+            .padding(.horizontal, 20)
+            .padding(.bottom, 8)
+
+            Text("Created by [Antonio Molinari](https://higgins.m6i.it)")
+                .font(.callout)
+                .foregroundStyle(.secondary)
+                .padding(.bottom, 12)
         }
-        .formStyle(.grouped)
-        .frame(
-            width: 440,
-            height: settings.aiBackend == .openAI ? 700 : 670
-        )
+        .frame(width: 440, height: windowHeight)
+        .onAppear {
+            isVerifiedWithTest = settings.hasVerifiedAISettings && settings.hasRequiredAISettings
+        }
+    }
+
+    private var canSave: Bool {
+        settings.hasRequiredAISettings && isVerifiedWithTest && !isVerificationInProgress
+    }
+
+    private var windowHeight: CGFloat {
+        var height: CGFloat = settings.aiBackend == .ollama ? 620 : 650
+        if settings.needsAISetup {
+            height += 22
+        }
+        return height
     }
 }
 
 private struct AISettingsSection: View {
     @Bindable var settings: SettingsService
+    @Binding var isVerifiedWithTest: Bool
+    @Binding var isVerificationInProgress: Bool
     @State private var availableModels: [String] = []
     @State private var modelsBackend: AIBackendType?
-    @State private var isLoadingModels = false
     @State private var errorMessage: String?
 
     var body: some View {
-        Section("AI Service") {
+        SettingsGroup("AI Service") {
             FillingPopUpPicker(
                 items: AIBackendType.allCases.map { ($0, $0.displayName) },
                 selection: $settings.aiBackend
             )
-
-            switch settings.aiBackend {
-            case .openAI:
-                SecureField("API Key", text: $settings.openAIKey)
-                TextField("Base URL", text: $settings.openAIBaseURL)
-            case .anthropic:
-                SecureField("API Key", text: $settings.anthropicKey)
-            case .ollama:
-                TextField("Server URL", text: $settings.ollamaURL)
-            }
 
             HStack {
                 FillingPopUpPicker(
                     items: modelOptions.map { ($0, $0) },
                     selection: $settings.selectedModel
                 )
-                .disabled(isLoadingModels || modelOptions.isEmpty)
+                .disabled(isVerificationInProgress || modelOptions.isEmpty)
                 .help("Model")
 
-                if isLoadingModels {
+                if isVerificationInProgress {
                     ProgressView()
                         .controlSize(.small)
                         .frame(width: 14, height: 14)
@@ -66,6 +109,15 @@ private struct AISettingsSection: View {
                 }
             }
 
+            switch settings.aiBackend {
+            case .openAI:
+                apiKeyField(text: $settings.openAIKey)
+            case .anthropic:
+                apiKeyField(text: $settings.anthropicKey)
+            case .ollama:
+                EmptyView()
+            }
+
             if let errorMessage {
                 Text(errorMessage)
                     .font(.caption)
@@ -77,6 +129,24 @@ private struct AISettingsSection: View {
             try? await Task.sleep(for: .milliseconds(500))
             guard !Task.isCancelled else { return }
             await fetchModels()
+        }
+    }
+
+    /// Horizontal inset of the title inside a pop-up button, so the label
+    /// lines up with the values shown in the menus above.
+    private static let popUpTitleInset: CGFloat = 10
+
+    private func apiKeyField(text: Binding<String>) -> some View {
+        // An HStack instead of LabeledContent, whose label column takes extra width:
+        // the label hugs its text and the field fills the rest of the row.
+        HStack {
+            Text("API Key")
+                .padding(.leading, Self.popUpTitleInset)
+                .fixedSize()
+            SecureField("API Key", text: text)
+                .labelsHidden()
+                .multilineTextAlignment(.leading)
+                .frame(maxWidth: .infinity)
         }
     }
 
@@ -95,31 +165,29 @@ private struct AISettingsSection: View {
     private var modelSourceID: String {
         switch settings.aiBackend {
         case .openAI:
-            "openai:\(settings.openAIBaseURL):\(settings.openAIKey)"
+            "openai:\(settings.openAIKey)"
         case .anthropic:
             "anthropic:\(settings.anthropicKey)"
         case .ollama:
-            "ollama:\(settings.ollamaURL)"
+            "ollama"
         }
     }
 
     private func fetchModels() async {
         let backend = settings.aiBackend
-        isLoadingModels = true
+        isVerificationInProgress = true
+        isVerifiedWithTest = false
         errorMessage = nil
-        defer { isLoadingModels = false }
+        defer { isVerificationInProgress = false }
 
         do {
             let models = switch backend {
             case .openAI:
-                try await OpenAIClient.fetchModels(
-                    apiKey: settings.openAIKey,
-                    serverURL: settings.openAIBaseURL
-                )
+                try await OpenAIClient.fetchModels(apiKey: settings.openAIKey)
             case .anthropic:
                 try await AnthropicClient.fetchModels(apiKey: settings.anthropicKey)
             case .ollama:
-                try await OllamaClient.fetchModels(serverURL: settings.ollamaURL)
+                try await OllamaClient.fetchModels()
             }
             // Ignore results that arrive after the user switched backend.
             guard backend == settings.aiBackend else { return }
@@ -128,10 +196,12 @@ private struct AISettingsSection: View {
             if let firstModel = models.first, !models.contains(settings.selectedModel) {
                 settings.selectedModel = firstModel
             }
+            isVerifiedWithTest = !models.isEmpty
         } catch {
             guard backend == settings.aiBackend, !Task.isCancelled else { return }
             availableModels = []
             modelsBackend = backend
+            isVerifiedWithTest = false
             errorMessage = error.localizedDescription
         }
     }
@@ -143,7 +213,7 @@ private struct PromptSettingsSection: View {
     @State private var showsDeleteConfirmation = false
 
     var body: some View {
-        Section("Prompt") {
+        SettingsGroup("Prompt") {
             HStack {
                 FillingPopUpPicker(
                     items: settings.prompts.map { ($0.id, $0.name) },
@@ -179,20 +249,23 @@ private struct PromptSettingsSection: View {
                 .disabled(settings.prompts.count == 1)
             }
 
-            TextEditor(text: $settings.improvementPrompt)
-                .font(.body)
-                .frame(minHeight: 180)
-                .padding(4)
-                .background(.background)
-                .clipShape(.rect(cornerRadius: 6))
-                .overlay {
-                    RoundedRectangle(cornerRadius: 6)
-                        .stroke(.separator, lineWidth: 1)
-                }
+            // One form row, so no separator is drawn between the editor and its hint.
+            VStack(alignment: .leading, spacing: 6) {
+                TextEditor(text: $settings.improvementPrompt)
+                    .font(.body)
+                    .frame(minHeight: 90)
+                    .padding(4)
+                    .background(.background)
+                    .clipShape(.rect(cornerRadius: 6))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 6)
+                            .stroke(.separator, lineWidth: 1)
+                    }
 
-            Text("use {selection} as selected text placeholder")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+                Text("use {selection} as selected text placeholder")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+            }
         }
         .sheet(item: $editor) { editor in
             PromptNameEditor(
@@ -305,6 +378,30 @@ private struct PromptNameEditor: View {
     }
 }
 
+private struct SettingsGroup<Content: View>: View {
+    let title: LocalizedStringResource
+    @ViewBuilder let content: Content
+
+    init(_ title: LocalizedStringResource, @ViewBuilder content: () -> Content) {
+        self.title = title
+        self.content = content()
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.secondary)
+            VStack(alignment: .leading, spacing: 8) {
+                content
+            }
+            .padding(10)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(.fill.tertiary, in: .rect(cornerRadius: 8))
+        }
+    }
+}
+
 /// A pop-up menu that fills the available width.
 /// SwiftUI's menu `Picker` keeps the pop-up button at its intrinsic width on macOS,
 /// so `.frame(maxWidth: .infinity)` only centers it instead of stretching it.
@@ -363,15 +460,110 @@ private struct FillingPopUpPicker<ID: Hashable>: NSViewRepresentable {
 }
 
 private struct ShortcutSettingsSection: View {
+    @Bindable var settings: SettingsService
+
     var body: some View {
-        Section("Keyboard Shortcut") {
-            LabeledContent("Improve selected text") {
-                Text("⌃⌥⌘C")
-                    .monospaced()
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 3)
-                    .background(.quaternary, in: .rect(cornerRadius: 4))
+        SettingsGroup("Keyboard Shortcut") {
+            // An HStack instead of LabeledContent: the form aligns a LabeledContent
+            // label to the first text baseline, not to the center of the large box.
+            HStack(alignment: .center) {
+                Text("Click to change, enter to confirm")
+                Spacer()
+                ShortcutRecorder(settings: settings)
             }
+        }
+    }
+}
+
+/// Shows the current shortcut; clicking it captures the next key combination.
+/// Every key is accepted except Return/Enter, which saves and ends recording.
+private struct ShortcutRecorder: View {
+    @Bindable var settings: SettingsService
+    @State private var pendingShortcut: HotkeyShortcut?
+    @State private var liveModifiers: NSEvent.ModifierFlags = []
+    @State private var eventMonitor: Any?
+
+    var body: some View {
+        Button {
+            if settings.isRecordingHotkey {
+                stopRecording(saving: false)
+            } else {
+                startRecording()
+            }
+        } label: {
+            Text(displayText)
+                .font(.title2.monospaced().weight(.semibold))
+                .padding(.horizontal, 14)
+                .padding(.vertical, 8)
+                .frame(minWidth: 120)
+                .background(
+                    settings.isRecordingHotkey ? AnyShapeStyle(.tint.opacity(0.2)) : AnyShapeStyle(.quaternary),
+                    in: .rect(cornerRadius: 8)
+                )
+                .overlay {
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(settings.isRecordingHotkey ? AnyShapeStyle(.tint) : AnyShapeStyle(.separator), lineWidth: 1)
+                }
+        }
+        .buttonStyle(.plain)
+        .help(settings.isRecordingHotkey ? "Press the new shortcut, then Return to save. Click to cancel." : "Click to change the shortcut")
+        .onDisappear {
+            stopRecording(saving: false)
+        }
+    }
+
+    private var displayText: String {
+        guard settings.isRecordingHotkey else {
+            return settings.hotkeyShortcut.displayString
+        }
+        if let pendingShortcut {
+            return pendingShortcut.displayString
+        }
+        let modifiers = HotkeyShortcut.symbols(for: liveModifiers)
+        return modifiers.isEmpty ? "Press keys…" : modifiers
+    }
+
+    private func startRecording() {
+        pendingShortcut = nil
+        liveModifiers = []
+        settings.isRecordingHotkey = true
+        // A local monitor sees keys before menus and controls, so it can swallow
+        // combinations like ⌘W or ⌘Q while recording.
+        eventMonitor = NSEvent.addLocalMonitorForEvents(matching: [.keyDown, .flagsChanged]) { event in
+            handle(event)
+            return nil
+        }
+    }
+
+    private func handle(_ event: NSEvent) {
+        let modifiers = event.modifierFlags.intersection(HotkeyShortcut.supportedModifiers)
+        switch event.type {
+        case .flagsChanged:
+            liveModifiers = modifiers
+        case .keyDown:
+            if let shortcut = HotkeyShortcut(event: event) {
+                pendingShortcut = shortcut
+            } else {
+                // Return/Enter confirms the captured combination.
+                stopRecording(saving: true)
+            }
+        default:
+            break
+        }
+    }
+
+    private func stopRecording(saving: Bool) {
+        if let eventMonitor {
+            NSEvent.removeMonitor(eventMonitor)
+        }
+        eventMonitor = nil
+        if saving, let pendingShortcut {
+            settings.hotkeyShortcut = pendingShortcut
+        }
+        pendingShortcut = nil
+        liveModifiers = []
+        if settings.isRecordingHotkey {
+            settings.isRecordingHotkey = false
         }
     }
 }

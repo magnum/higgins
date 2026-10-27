@@ -24,17 +24,69 @@ final class AppState {
     }
 
     private func setupHotkey() {
-        hotkeyManager = HotkeyManager { [weak self] in
+        hotkeyManager = HotkeyManager(shortcut: settings.hotkeyShortcut) { [weak self] in
             self?.handleHotkey()
+        }
+        settings.onHotkeyConfigurationChange = { [weak self] in
+            self?.updateHotkey()
         }
 
         DispatchQueue.main.async { [weak self] in
             self?.requestAccessibilityPermission(showGuidance: true)
         }
+
+        if settings.needsAISetup {
+            Task { @MainActor [weak self] in
+                try? await Task.sleep(for: .milliseconds(400))
+                self?.presentSettings()
+            }
+        }
+    }
+
+    func presentSettings() {
+        NSApp.activate(ignoringOtherApps: true)
+        if let openSettings {
+            openSettings()
+            return
+        }
+        NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+        bringWindowToFront { $0.localizedCaseInsensitiveContains("settings") }
+    }
+
+    /// Menu-bar apps aren't active by default, so windows would otherwise
+    /// open behind the frontmost application. Wait for SwiftUI to create
+    /// the window, then bring it front.
+    func bringWindowToFront(matching matchesIdentifier: @escaping (String) -> Bool) {
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(150))
+            NSApp.activate()
+            guard let window = NSApp.windows.first(where: { window in
+                window.identifier.map { matchesIdentifier($0.rawValue) } ?? false
+            }) else {
+                let identifiers = NSApp.windows.compactMap(\.identifier?.rawValue)
+                log("Window to bring to front not found among: \(identifiers)", type: .error)
+                return
+            }
+            window.makeKeyAndOrderFront(nil)
+            window.orderFrontRegardless()
+        }
+    }
+
+    private func updateHotkey() {
+        guard let hotkeyManager else { return }
+        if settings.isRecordingHotkey {
+            hotkeyManager.suspend()
+        } else {
+            hotkeyManager.update(shortcut: settings.hotkeyShortcut)
+        }
     }
 
     private func handleHotkey() {
         guard !isProcessing else { return }
+        if settings.needsAISetup {
+            presentSettings()
+            return
+        }
         guard requestAccessibilityPermission(showGuidance: true) else { return }
         let sourceApplication = NSWorkspace.shared.frontmostApplication
 
@@ -100,8 +152,7 @@ final class AppState {
             OpenAIClient(
                 apiKey: settings.openAIKey,
                 prompt: settings.improvementPrompt,
-                model: settings.selectedModel,
-                serverURL: settings.openAIBaseURL
+                model: settings.selectedModel
             )
         case .anthropic:
             AnthropicClient(
@@ -112,8 +163,7 @@ final class AppState {
         case .ollama:
             OllamaClient(
                 prompt: settings.improvementPrompt,
-                model: settings.selectedModel,
-                serverURL: settings.ollamaURL
+                model: settings.selectedModel
             )
         }
     }
@@ -130,7 +180,7 @@ final class AppState {
 
         let alert = NSAlert()
         alert.messageText = "Accessibility Access Required"
-        alert.informativeText = "Higgins needs Accessibility access to copy and replace selected text. Enable it in System Settings → Privacy & Security → Accessibility, then use ⌃⌥⌘C again."
+        alert.informativeText = "Higgins needs Accessibility access to copy and replace selected text. Enable it in System Settings → Privacy & Security → Accessibility, then use \(settings.hotkeyShortcut.displayString) again."
         alert.alertStyle = .warning
         alert.addButton(withTitle: "Open System Settings")
         alert.addButton(withTitle: "Later")
@@ -300,7 +350,7 @@ struct MenuContentView: View {
             }
 
             Button("Show Logs") {
-                openWindow(id: "logs")
+                showLogs()
             }
             .keyboardShortcut("l")
 
@@ -323,30 +373,15 @@ struct MenuContentView: View {
     }
 
     /// Opens the Settings window and brings it to the front.
-    /// As a menu bar app, Higgins isn't active by default, so the window
-    /// would otherwise open behind the frontmost application.
     private func showSettings() {
         openSettings()
-        // The action runs while the menu bar menu is still tracking, so any
-        // activation done now is lost when the menu closes. Wait for the menu
-        // to dismiss and for SwiftUI to create the window, then bring it front.
-        Task { @MainActor in
-            try? await Task.sleep(for: .milliseconds(150))
-            NSApp.activate()
-            guard let window = NSApp.windows.first(where: \.isSettingsWindow) else {
-                log("Settings window not found", type: .error)
-                return
-            }
-            window.makeKeyAndOrderFront(nil)
-            window.orderFrontRegardless()
-        }
+        appState.bringWindowToFront { $0.localizedCaseInsensitiveContains("settings") }
     }
-}
 
-private extension NSWindow {
-    /// SwiftUI tags the `Settings` scene window with an identifier containing "Settings".
-    var isSettingsWindow: Bool {
-        identifier?.rawValue.localizedCaseInsensitiveContains("settings") == true
+    /// Opens the Logs window and brings it to the front.
+    private func showLogs() {
+        openWindow(id: "logs")
+        appState.bringWindowToFront { $0.hasPrefix("logs") }
     }
 }
 
